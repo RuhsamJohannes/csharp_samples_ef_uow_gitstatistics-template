@@ -18,7 +18,7 @@ namespace GitStat.ImportConsole
                 unitOfWorkImport.DeleteDatabase();
                 Console.WriteLine("Datenbank migrieren");
                 unitOfWorkImport.MigrateDatabase();
-                Console.WriteLine("Commits werden von commits.txt eingelesen");
+                Console.WriteLine("Commits werden von commits.csv eingelesen");
                 var commits = ImportController.ReadFromCsv();
                 if (commits.Length == 0)
                 {

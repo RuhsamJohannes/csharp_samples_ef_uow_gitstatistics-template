@@ -5,20 +5,47 @@ using System.Linq;
 using System.Text;
 using GitStat.Core.Entities;
 using Utils;
+using System.Linq;
 
 namespace GitStat.ImportConsole
 {
     public class ImportController
     {
-        const string Filename = "commits.txt";
+        const string FilenameTxt = "commits.txt";
+        const string FilenameCsv = "commits.csv";
 
         /// <summary>
         /// Liefert die Messwerte mit den dazugehörigen Sensoren
         /// </summary>
         public static Commit[] ReadFromCsv()
         {
-            throw new NotImplementedException();
-        }
+            string[][] commitArray = MyFile.ReadStringMatrixFromCsv(FilenameCsv, false);
 
+            var devs = commitArray.GroupBy(n => n[0])
+                                    .Select(n => new Developer
+                                    {
+                                        Name = n.Key,
+                                        Commits = new List<Commit>()
+                                    }).ToDictionary(n => n.Name);
+
+            var commits = commitArray.Select(c => new Commit
+            {
+                Developer = devs[c[0]],
+                Date = DateTime.Parse(c[1]),
+                HashCode = c[2],
+                Message = c[3],
+                FilesChanges = int.Parse(c[4]),
+                Insertions = int.Parse(c[5]),
+                Deletions = int.Parse(c[6])
+            }).ToArray();
+
+
+            foreach (var item in commits)
+            {
+                item.Developer.Commits.Add(item);
+            }
+
+            return commits;
+        }
     }
 }
