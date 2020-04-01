@@ -1,9 +1,9 @@
-﻿using System;
+﻿using GitStat.Core.Contracts;
+using GitStat.Persistence;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
-using GitStat.Core.Contracts;
-using GitStat.Persistence;
 
 namespace GitStat.ImportConsole
 {
@@ -37,14 +37,47 @@ namespace GitStat.ImportConsole
                     $"{c.Developer.Name};{c.Date};{c.Message};{c.HashCode};{c.FilesChanges};{c.Insertions};{c.Deletions}");
                 File.WriteAllLines("commits.csv", csvCommits, Encoding.UTF8);
             }
-            Console.WriteLine("Datenbankabfragen");
+
+
+            Console.WriteLine("\nDatenbankabfragen");
             Console.WriteLine("=================");
             using (IUnitOfWork unitOfWork = new UnitOfWork())
             {
+                //Commits der letzten Vier Wochen vor dem letzten Commit
+                int days = 28;
+                var latestCommits = unitOfWork.CommitRepository.GetLatestCommits(days); //GetDevStats(28) => days since last commit
+
+                Console.WriteLine($"\nCommits der letzten {days} Tage vor dem letzten Commit");
+                Console.WriteLine($"---------------------------------------------------");
+                Console.WriteLine($"{"Developer",-15}{"Date",-11}{"FileChanges", -13}{"Insertions", -12}{"Deletions", -11}");
+
+                foreach (var item in latestCommits)
+                {
+                    Console.WriteLine($"{item.Developer.Name,-15}{item.Date.ToShortDateString(),-11}{item.FilesChanges, -13}{item.Insertions,-12}{item.Deletions,-11}");
+                }
+
+                //Commit mit id
+                int id = 4;
+                var IdCommit = unitOfWork.CommitRepository.GetCommitById(id);
+
+                Console.WriteLine($"\nCommits mit ID {id}");
+                Console.WriteLine($"----------------");
+                Console.WriteLine($"{IdCommit.Developer.Name,-15}{IdCommit.Date.ToShortDateString(),-11}{IdCommit.FilesChanges,-13}{IdCommit.Insertions,-12}{IdCommit.Deletions,-11}");
+
+                //Statistik der Commits der Developer
+                var devStats = unitOfWork.DeveloperRepository.GetDevStats();
+
+                Console.WriteLine("\nStatistik der Commits der Developer");
+                Console.WriteLine("-----------------------------------");
+                Console.WriteLine($"{"Developer",-15}{"Commits",-11}{"FileChanges",-13}{"Insertions",-12}{"Deletions",-11}");
+
+                foreach (var item in devStats)
+                {
+                    Console.WriteLine($"{item.Item1,-15}{item.Item2,-11}{item.Item3,-13}{item.Item4,-12}{item.Item5,-11}");
+                }
             }
             Console.Write("Beenden mit Eingabetaste ...");
             Console.ReadLine();
         }
-
     }
 }

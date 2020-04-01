@@ -19,16 +19,17 @@ namespace GitStat.ImportConsole
         /// </summary>
         public static Commit[] ReadFromCsv()
         {
-            string[][] commitArray = MyFile.ReadStringMatrixFromCsv(FilenameCsv, false);
+            string[][] commitsArray = MyFile.ReadStringMatrixFromCsv(FilenameCsv, false);
 
-            var devs = commitArray.GroupBy(n => n[0])
-                                    .Select(n => new Developer
-                                    {
-                                        Name = n.Key,
-                                        Commits = new List<Commit>()
-                                    }).ToDictionary(n => n.Name);
+            var devs = commitsArray.GroupBy(c => c[0])
+                .Select(c => new Developer
+                {
+                    Name = c.Key,
+                    Commits = new List<Commit>()
 
-            var commits = commitArray.Select(c => new Commit
+                }).ToDictionary(n => n.Name);
+
+            var commits = commitsArray.Select(c => new Commit
             {
                 Developer = devs[c[0]],
                 Date = DateTime.Parse(c[1]),
@@ -38,7 +39,6 @@ namespace GitStat.ImportConsole
                 Insertions = int.Parse(c[5]),
                 Deletions = int.Parse(c[6])
             }).ToArray();
-
 
             foreach (var item in commits)
             {
